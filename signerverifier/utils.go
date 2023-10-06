@@ -1,7 +1,9 @@
 package signerverifier
 
 import (
+	"crypto"
 	"crypto/sha256"
+	"crypto/sha512"
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
@@ -147,4 +149,34 @@ func hexDecode(t *testing.T, data string) []byte {
 		t.Fatal(err)
 	}
 	return b
+}
+
+/*
+Get digest of passed byte arry
+
+Supported hash functions:
+
+  - SHA256
+  - SHA384
+  - SHA512
+*/
+func getDigest(data []byte, hash_function crypto.Hash) ([]byte, error) {
+	var digest any
+	switch hash_function {
+	case crypto.SHA256:
+		digest = sha256.New()
+	case crypto.SHA384:
+		digest = sha512.New384()
+	case crypto.SHA512:
+		digest = sha512.New()
+	default:
+		return nil, errors.New("unsupported hash function")
+	}
+
+	_, err := digest.(hash.Hash).Write(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return digest.(hash.Hash).Sum(nil), nil
 }
